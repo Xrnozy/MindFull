@@ -28,9 +28,53 @@
     <div id="dashboard-section" class="section hidden">
         <h2>Dashboard</h2>
         <p>You are logged in!</p>
-        <button onclick="getUserProfile()">Get My Profile</button>
-        <button onclick="logout()">Logout</button>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="sub-section">
+                <h3>User & Admin</h3>
+                <button onclick="getUserProfile()">Get My Profile</button>
+                <button onclick="listUsers()">List All Users (Admin)</button>
+            </div>
+            <div class="sub-section">
+                <h3>Sustainability</h3>
+                <button onclick="getSustainabilityScore()">Get Score</button>
+                <button onclick="getSustainabilityHistory()">Get History</button>
+                <button onclick="logPrompt()">Log Test Prompt</button>
+            </div>
+            <div class="sub-section">
+                <h3>Forest</h3>
+                <button onclick="getForest()">Get My Forest</button>
+                <button onclick="listTrees()">List My Trees</button>
+                <button onclick="plantTree()">Plant Random Tree</button>
+            </div>
+            <div class="sub-section">
+                <h3>Gamification</h3>
+                <button onclick="getXP()">Get XP History</button>
+                <button onclick="getAchievements()">Get Achievements</button>
+                <button onclick="getLeaderboard()">Get Leaderboard</button>
+            </div>
+            <div class="sub-section">
+                <h3>Prompt Coach</h3>
+                <button onclick="analyzePrompt()">Analyze Test Prompt</button>
+                <button onclick="getPromptHistory()">Get Analysis History</button>
+            </div>
+            <div class="sub-section">
+                <h3>Wellness</h3>
+                <button onclick="getWellnessGoals()">Get Goals</button>
+                <button onclick="getWellnessLimits()">Get Limits</button>
+            </div>
+            <div class="sub-section">
+                <h3>System</h3>
+                <button onclick="checkHealth()">Check API Health</button>
+                <button onclick="logout()">Logout</button>
+            </div>
+        </div>
     </div>
+
+    <style>
+        .sub-section { border: 1px solid #eee; padding: 10px; border-radius: 4px; }
+        .sub-section h3 { margin-top: 0; font-size: 1rem; color: #555; }
+        .sub-section button { margin: 2px; font-size: 0.8rem; }
+    </style>
 
     <div class="section">
         <h2>Response Log</h2>

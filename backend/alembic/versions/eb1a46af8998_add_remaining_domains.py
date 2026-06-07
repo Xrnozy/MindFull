@@ -704,6 +704,7 @@ def upgrade() -> None:
     op.create_index(op.f('ix_sustainability_metrics_user_id'), 'sustainability_metrics', ['user_id'], unique=False)
     op.add_column('users', sa.Column('full_name', sa.String(length=255), nullable=True))
     op.add_column('users', sa.Column('avatar_url', sa.String(length=512), nullable=True))
+    op.add_column('users', sa.Column('hashed_password', sa.String(length=255), nullable=True))
     op.add_column('users', sa.Column('is_active', sa.Boolean(), nullable=False))
     op.add_column('users', sa.Column('level', sa.Integer(), nullable=False))
     op.add_column('users', sa.Column('org_id', sa.UUID(), nullable=True))

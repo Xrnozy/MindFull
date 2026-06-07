@@ -37,12 +37,12 @@ app = FastAPI(
 if settings.ENABLE_METRICS:
     Instrumentator().instrument(app).expose(app, include_in_schema=False, should_gzip=True)
 
-# CORS — use configured origins instead of wildcard
+# CORS — wildcard origins cannot be used with allow_credentials=True
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 

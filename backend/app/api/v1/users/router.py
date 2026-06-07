@@ -2,6 +2,7 @@
 from __future__ import annotations
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from typing import List
 from app.db.session import get_db
 from app.api.dependencies import get_current_user, get_pagination, PaginationParams
@@ -50,6 +51,15 @@ async def list_users(
 ):
     """List users (org-scoped)."""
     service = UserService(db)
+    
+    # If the user is a super_admin, they can see all users
+    # Otherwise, regular users only see users in their same organization
+    if current_user.role == "super_admin":
+        result = await db.execute(select(User).limit(pagination.limit))
+        return result.scalars().all()
+
     if current_user.org_id:
         return await service.get_org_users(current_user.org_id, limit=pagination.limit)
-    return []
+    
+    # If not in an org, just return self
+    return [current_user]

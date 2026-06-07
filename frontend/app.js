@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:8000/api/v1";
+const API_BASE = "http://100.118.48.12:8000/api/v1";
 
 function logResponse(data) {
     const logDiv = document.getElementById("response-log");

@@ -38,6 +38,7 @@ def get_password_hash(password: str) -> str:
 def verify_supabase_jwt(token: str) -> dict:
     """
     Verifies the Supabase JWT or a local dev JWT.
+    Provides fallback logic between local development secrets and Supabase keys.
     """
     try:
         # Try local JWT first for our simple frontend tests
@@ -46,21 +47,17 @@ def verify_supabase_jwt(token: str) -> dict:
                 token,
                 settings.JWT_SECRET_KEY,
                 algorithms=[settings.JWT_ALGORITHM],
+                options={"verify_aud": False} # Allow tokens with or without audience for local dev
             )
         except jwt.InvalidTokenError:
             pass # Fall back to Supabase logic
             
         secret = settings.SUPABASE_JWT_SECRET or settings.SUPABASE_KEY
-        if not secret:
-            # Mock successful validation for local testing when no key is set
-            logger.warning("jwt_mock_mode", detail="No Supabase secret configured — using mock JWT payload")
-            return {
-                "sub": "00000000-0000-0000-0000-000000000001",
-                "email": "dev@mindfull.local",
-                "role": "authenticated",
-                "app_metadata": {},
-                "user_metadata": {},
-            }
+        if not secret or secret == "your-supabase-jwt-secret":
+            # If no actual secret is set, we might be in dev mode with an external token.
+            # In a real environment, we MUST have a secret.
+            logger.warning("auth_fallback_missing_secret", note="Attempting decode without verification (DEV ONLY)")
+            return jwt.decode(token, options={"verify_signature": False})
 
         payload = jwt.decode(
             token,
@@ -70,15 +67,22 @@ def verify_supabase_jwt(token: str) -> dict:
         )
         return payload
     except jwt.ExpiredSignatureError:
+        logger.warning("jwt_expired", token=token[:10] + "...")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token has expired",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    except jwt.InvalidTokenError:
+    except jwt.InvalidTokenError as e:
+        logger.warning("jwt_invalid", error=str(e), token=token[:10] + "...")
+        # Include more detail in dev/hackathon context
+        detail = "Could not validate credentials"
+        if settings.ENVIRONMENT == "development":
+            detail = f"Could not validate credentials: {str(e)}"
+            
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
+            detail=detail,
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -92,7 +96,11 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None) -> s
     expire = datetime.now(timezone.utc) + (
         expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     )
-    to_encode.update({"exp": expire, "type": "access"})
+    to_encode.update({
+        "exp": expire, 
+        "type": "access",
+        "aud": "authenticated"  # Standard audience for compatibility
+    })
     return jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
 
 

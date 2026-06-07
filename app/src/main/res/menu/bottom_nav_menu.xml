@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_home"
+        android:icon="@drawable/ic_dashboard"
+        android:title="@string/nav_home" />
+    <item
+        android:id="@+id/nav_coach"
+        android:icon="@drawable/ic_lightbulb_outline"
+        android:title="@string/nav_coach" />
+    <item
+        android:id="@+id/nav_think_ahead"
+        android:icon="@drawable/ic_bar_chart"
+        android:title="@string/nav_think_ahead" />
+    <item
+        android:id="@+id/nav_forest"
+        android:icon="@drawable/ic_leaf"
+        android:title="@string/nav_forest" />
+    <item
+        android:id="@+id/nav_greenmap"
+        android:icon="@drawable/ic_trending_up"
+        android:title="GreenMap" />
+</menu>

@@ -1,0 +1,14 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.Mindfull" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your light theme here. -->
+        <item name="colorPrimary">@color/brand_primary</item>
+        <item name="colorSecondaryContainer">@color/brand_active_pill</item>
+        <item name="colorOnSecondaryContainer">@color/brand_primary</item>
+        <item name="colorSurface">@color/brand_background</item>
+        <item name="colorOnSurface">@color/brand_inactive</item>
+        <item name="colorOnSurfaceVariant">@color/brand_inactive</item>
+    </style>
+
+    <style name="Theme.Mindfull" parent="Base.Theme.Mindfull" />
+</resources>

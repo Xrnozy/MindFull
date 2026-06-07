@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="BottomNavText" parent="TextAppearance.Material3.LabelSmall">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/nav_item_color</item>
+    </style>
+
+    <style name="BottomNavText.Active">
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/brand_primary</item>
+    </style>
+</resources>

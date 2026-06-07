@@ -1,0 +1,1 @@
+"""Think-A-Head Domain."""

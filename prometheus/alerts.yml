@@ -1,0 +1,112 @@
+# MindFull Prometheus Alert Rules
+# These alerts cover infrastructure health, application performance,
+# and resource exhaustion scenarios.
+
+groups:
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # Infrastructure Alerts
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  - name: infrastructure
+    rules:
+      # API service down (no metrics being scraped)
+      - alert: APIServiceDown
+        expr: up{job="fastapi"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: api
+        annotations:
+          summary: "FastAPI service is down"
+          description: "The FastAPI application has been unreachable for more than 1 minute."
+
+      # Traefik down
+      - alert: TraefikDown
+        expr: up{job="traefik"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          service: traefik
+        annotations:
+          summary: "Traefik reverse proxy is down"
+          description: "Traefik has been unreachable for more than 30 seconds. All traffic routing is affected."
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # Application Performance Alerts
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  - name: application
+    rules:
+      # High 5xx error rate
+      - alert: HighErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{status=~"5.."}[5m]))
+            /
+            sum(rate(http_requests_total[5m]))
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          service: api
+        annotations:
+          summary: "High 5xx error rate: {{ $value | humanizePercentage }}"
+          description: "More than 5% of HTTP requests are returning 5xx errors over the last 5 minutes."
+
+      # High P95 latency
+      - alert: HighLatencyP95
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) > 2
+        for: 5m
+        labels:
+          severity: warning
+          service: api
+        annotations:
+          summary: "P95 latency above 2 seconds"
+          description: "The 95th percentile response time has exceeded 2 seconds for 5 minutes."
+
+      # High P99 latency (critical)
+      - alert: HighLatencyP99
+        expr: histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) > 5
+        for: 5m
+        labels:
+          severity: critical
+          service: api
+        annotations:
+          summary: "P99 latency above 5 seconds"
+          description: "The 99th percentile response time has exceeded 5 seconds for 5 minutes."
+
+      # Too many rate-limited requests
+      - alert: HighRateLimitHits
+        expr: sum(rate(http_requests_total{status="429"}[5m])) > 1
+        for: 10m
+        labels:
+          severity: warning
+          service: api
+        annotations:
+          summary: "High rate of 429 responses"
+          description: "More than 1 req/s are being rate-limited. Possible abuse or misconfigured client."
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # Traefik Alerts
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  - name: traefik
+    rules:
+      # TLS certificate expiring soon
+      - alert: CertificateExpiringSoon
+        expr: (traefik_tls_certs_not_after - time()) < 7 * 24 * 3600
+        for: 1h
+        labels:
+          severity: warning
+          service: traefik
+        annotations:
+          summary: "TLS certificate expires in less than 7 days"
+          description: "Certificate for {{ $labels.cn }} expires in {{ $value | humanizeDuration }}."
+
+      # High Traefik error rate
+      - alert: TraefikHighBackendErrors
+        expr: sum(rate(traefik_service_requests_total{code=~"5.."}[5m])) by (service) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          service: traefik
+        annotations:
+          summary: "High backend error rate on {{ $labels.service }}"
+          description: "Service {{ $labels.service }} is returning more than 0.5 errors/sec."

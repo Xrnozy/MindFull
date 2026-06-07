@@ -1,0 +1,39 @@
+# Stage 1: Build
+FROM python:3.11-slim as builder
+
+WORKDIR /app
+
+# Install dependencies required for building wheels
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip install poetry==1.5.1
+
+RUN poetry config virtualenvs.create false
+
+COPY pyproject.toml ./
+RUN poetry export -f requirements.txt --output requirements.txt --without-hashes
+
+# Stage 2: Production
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install runtime dependencies only
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /app/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy source code
+COPY . .
+
+# Run unprivileged user
+RUN useradd -m myuser
+USER myuser
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
